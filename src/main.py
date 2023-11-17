@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
-with open(r"C:\Users\jessi\OneDrive\Dokument\GitHub\music-analysis\data\spotify-2023.csv", 'r') as f:
+with open(r"C:\Users\amand\Documents\GitHub\music-analysis\data\spotify-2023.csv", 'r') as f:
     df = pd.read_csv(f)
     
     print(df.head())
@@ -77,34 +77,22 @@ U, S, VT = np.linalg.svd(scaled_data_no_streams)
 V = np.transpose(VT)
 Z = np.dot(scaled_data_no_streams, V)
 
+PC1 = V[:, 0]
+PC2 = V[:, 1]
+
+#Find the attributes that are primarily represented by the first and second PC
+attributes_for_PC1 = dataframe.columns[np.argsort(np.abs(PC1))[::-1]]
+attributes_for_PC2 = dataframe.columns[np.argsort(np.abs(PC2))[::-1]]
+print("Attributes primarily represented by the first PC:" + attributes_for_PC1[0])
+print("Attributes primarily represented by the second PC:" + attributes_for_PC2[0])
+
 # Combine with 'streams' for plotting
 Z_with_streams = np.column_stack((dataframe['streams'].values, Z))
 
 scatter_pc1_pc2 = plt.figure()
 plt.scatter(Z_with_streams[:, 1], Z_with_streams[:, 2], c=Z_with_streams[:, 0], cmap='viridis', alpha=0.7)
-plt.xlabel('PC1')
-plt.ylabel('PC2')
+plt.xlabel('PC1 ' + attributes_for_PC1[0])
+plt.ylabel('PC2 ' + attributes_for_PC2[0])
 plt.title('Projection onto the First Two Principal Components with Streams')
 plt.colorbar(label='Streams')
 plt.show()
-
-PC1 = V[:, 0]
-
-#Find the attributes that are primarily represented by the first PC
-attributes_for_PC1 = dataframe.columns[np.argsort(np.abs(PC1))[::-1]]
-print("Attributes primarily represented by the first PC:")
-print(attributes_for_PC1)
-
-#Here starts the second part of the question
-#Here we calculate the projection of data onto PC2
-projection_onto_PC2 = np.dot(Y, VT[:, 1])
-
-#Identify the observation with the largest positive projection
-observation_with_largest_positive_projection = np.argmax(projection_onto_PC2)
-
-#Identify the observation with the largest negative projection
-observation_with_largest_negative_projection = np.argmin(projection_onto_PC2)
-
-#Now we can display the projections
-print("\nLargest positive projection onto PC2:", projection_onto_PC2[observation_with_largest_positive_projection])
-print("Largest negative projection onto PC2:", projection_onto_PC2[observation_with_largest_negative_projection])
