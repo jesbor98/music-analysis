@@ -11,6 +11,7 @@ with open(r"C:\Users\amand\Documents\GitHub\music-analysis\data\spotify-2023.csv
     
     print(df.head())
     
+#-----------Here starts PCA with all attributes------------------
 selected_attributes = ['streams', 'danceability_%', 'valence_%', 'energy_%', 'acousticness_%', 'instrumentalness_%', 'liveness_%', 'speechiness_%']
 
 dataframe = df[selected_attributes]
@@ -52,4 +53,27 @@ plt.xlabel('PC1')
 plt.ylabel('PC2')
 plt.title('Projection onto the First Two Principal Components with Streams')
 plt.colorbar(label='Streams')
+plt.show()
+
+#-----------------------------
+
+#-----------Here starts valence vs liveness plot-----------------
+
+# Select the attributes for the scatter plot
+attribute_x = 'valence_%'
+attribute_y = 'liveness_%'
+
+scatter_plot_AB = plt.figure()
+dataframe.plot.scatter(x=attributes_for_PC1[0], y=attributes_for_PC2[0], label='Valence vs. Liveness', color='blue')
+
+# Calculate the line of best fit (linear regression)
+fit = np.polyfit(df[attribute_x], df[attribute_y], 1)
+line = np.polyval(fit, df[attribute_x])
+
+# Plot the line of best fit
+plt.plot(df[attribute_x], line, color='red', label='Linear Fit')
+plt.title('Valence vs. Liveness')
+plt.xlim(-10, 120)
+plt.ylim(-20, 200)
+plt.legend()
 plt.show()
