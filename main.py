@@ -5,6 +5,7 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.tree import DecisionTreeClassifier, plot_tree
 
 with open(r"./data/spotify-2023.csv", 'r') as f:
     df = pd.read_csv(f)
@@ -63,4 +64,23 @@ plt.title('Acousticness vs. Valence')
 #plt.xlim(-10, 120)
 #plt.ylim(-20, 200)
 plt.legend()
+plt.show()
+
+
+#-----------------------------
+
+#-----------Decision Tree-----------------
+X_spotify = df[selected_attributes]
+y_spotify = df['mode'].ravel()
+
+#attribute_names = [name[0] for name in df['attributeNames'][0]]
+#class_names = [name[0][0] for name in df['classNames']]
+feature_names_list = X_spotify.columns.tolist()
+
+dtc_spotify = DecisionTreeClassifier(criterion='gini', min_samples_split=100)
+dtc_spotify.fit(X_spotify, y_spotify)
+
+plt.figure()
+plot_tree(dtc_spotify, feature_names=feature_names_list, class_names=['Minor', 'Major'], filled=True, rounded=True, impurity=True, fontsize=10)
+
 plt.show()
