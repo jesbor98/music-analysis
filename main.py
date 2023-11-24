@@ -71,7 +71,7 @@ plt.show()
 
 #-----------Decision Tree-----------------
 df['streams'] = pd.to_numeric(df['streams'], errors='coerce')
-decision_tree_attributes = ['streams', 'danceability_%', 'valence_%', 'energy_%', 'acousticness_%', 'instrumentalness_%', 'liveness_%', 'speechiness_%']
+decision_tree_attributes = ['streams']
 X_spotify = df[decision_tree_attributes]
 y_spotify = df['mode'].ravel()
 
@@ -83,10 +83,10 @@ mode_counts = df['mode'].value_counts()
 mode_counts = mode_counts.sort_values(ascending=False)
 print(mode_counts)
 
-dtc_spotify = DecisionTreeClassifier(criterion='gini', min_samples_split=100)
+dtc_spotify = DecisionTreeClassifier(criterion='gini', min_samples_split=15)
 dtc_spotify.fit(X_spotify, y_spotify)
 
 plt.figure(figsize=(100, 100))
-plot_tree(dtc_spotify, feature_names=feature_names_list, class_names=['Minor', 'Major'], filled=True, rounded=True, impurity=True, fontsize=8)
+plot_tree(dtc_spotify, feature_names=feature_names_list, class_names=['Major', 'Minor'], filled=True, rounded=True, impurity=True, fontsize=8)
 
 plt.show()
