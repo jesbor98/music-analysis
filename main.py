@@ -71,22 +71,88 @@ plt.show()
 
 #-----------Decision Tree-----------------
 df['streams'] = pd.to_numeric(df['streams'], errors='coerce')
-decision_tree_attributes = ['streams']
-X_spotify = df[decision_tree_attributes]
-y_spotify = df['mode'].ravel()
+dtc_attr_streams_only = ['streams']
+dtc_attr = ['streams', 'danceability_%', 'valence_%', 'energy_%', 'acousticness_%', 'instrumentalness_%', 'liveness_%', 'speechiness_%']
+X_dtc_attr_streams_only = df[dtc_attr_streams_only]
+X_dtc_attr = df[dtc_attr]
+y_dtc_attr = df['mode'].ravel()
 
-#attribute_names = [name[0] for name in df['attributeNames'][0]]
-#class_names = [name[0][0] for name in df['classNames']]
-feature_names_list = X_spotify.columns.tolist()
+feature_names_list_streams_only = X_dtc_attr_streams_only.columns.tolist()
+feature_names_list = X_dtc_attr.columns.tolist()
 
 mode_counts = df['mode'].value_counts()
 mode_counts = mode_counts.sort_values(ascending=False)
 print(mode_counts)
 
-dtc_spotify = DecisionTreeClassifier(criterion='gini', min_samples_split=15)
-dtc_spotify.fit(X_spotify, y_spotify)
+dtc_streams_only = DecisionTreeClassifier(criterion='gini', min_samples_split=15)
+dtc = DecisionTreeClassifier(criterion='gini', min_samples_split=15)
+dtc_streams_only.fit(X_dtc_attr_streams_only, y_dtc_attr)
+dtc.fit(X_dtc_attr, y_dtc_attr)
 
 plt.figure(figsize=(100, 100))
-plot_tree(dtc_spotify, feature_names=feature_names_list, class_names=['Major', 'Minor'], filled=True, rounded=True, impurity=True, fontsize=8)
-
+plot_tree(dtc_streams_only, feature_names=feature_names_list_streams_only, class_names=['Major', 'Minor'], filled=True, rounded=True, impurity=True, fontsize=8)
 plt.show()
+
+plt.figure(figsize=(100, 100))
+plot_tree(dtc, feature_names=feature_names_list, class_names=['Major', 'Minor'], filled=True, rounded=True, impurity=True, fontsize=8)
+plt.show()
+
+#------------------------------------
+
+#---------Print leaf node with most streams------------
+
+# Assuming dtc_streams_only is your trained decision tree model
+leaf_indices = dtc_streams_only.apply(X_dtc_attr_streams_only)
+
+# Find the index corresponding to the instance with the most streams
+index_most_streams = X_dtc_attr_streams_only['streams'].idxmax()
+
+# Find the leaf node for the instance with the most streams
+leaf_node_most_streams = leaf_indices[index_most_streams]
+
+print(f"The leaf node for the instance with the most streams is: {leaf_node_most_streams}")
+
+#----------------------------
+
+#----------Print number of samples in the leaf node we got------------------
+
+leaf_node_index = 330
+
+# Access the decision tree structure
+tree_structure = dtc_streams_only.tree_
+
+# Find the number of samples for the specified leaf node
+num_samples_in_leaf = tree_structure.n_node_samples[leaf_node_index]
+
+print(f"The number of samples in leaf node {leaf_node_index} is: {num_samples_in_leaf}")
+
+#---------------------------------------------
+
+#-------------Print the top 12 most streamed songs------------------
+
+# Sort the DataFrame by 'streams' in descending order and take the top 10 rows
+top_12_streamed_songs = df.sort_values(by='streams', ascending=False).head(12)
+
+# Print the top 10 most streamed songs
+print(top_12_streamed_songs[['track_name', 'artist(s)_name', 'streams', 'mode']].to_string(index=False))
+
+#-----------------------------------------------
+
+#-----------Print top 12 songs with attributes in order------------
+
+# Iterate through the top 12 most streamed songs
+for index, row in top_12_streamed_songs.iterrows():
+    # Extract relevant information
+    track_name = row['track_name']
+    artist_name = row['artist(s)_name']
+    streams = row['streams']
+    
+    # Extract and sort the specified attributes in descending order
+    attributes = ['danceability_%', 'valence_%', 'energy_%', 'acousticness_%', 'instrumentalness_%', 'liveness_%', 'speechiness_%']
+    sorted_attributes = sorted([(attr, row[attr]) for attr in attributes], key=lambda x: x[1], reverse=True)
+    
+    # Print the information for each song
+    print(f"Track: {track_name} - Artist: {artist_name} - Streams: {streams}")
+    for attr, value in sorted_attributes:
+        print(f"{attr}: {value}")
+    print('\n' + '-'*50 + '\n')
