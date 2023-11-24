@@ -18,17 +18,13 @@ dataframe = df[selected_attributes]
 dataframe = dataframe.dropna()
 
 # Standardize the data
+mu = np.mean(dataframe, axis=0)
+X = dataframe - mu
 
-
-X = dataframe.values
-mu = np.mean(X, axis=0)
-
-Y = X - mu
-# Apply PCA for dimensionality reduction
-U, S, VT = np.linalg.svd(Y)
-
+# Perform PCA
+U, S, VT = np.linalg.svd(X)
 V = np.transpose(VT)
-Z = np.dot(Y, V)
+Z = np.dot(X, V)
 
 PC1 = V[:, 0]
 PC2 = V[:, 1]
@@ -36,14 +32,14 @@ PC2 = V[:, 1]
 #Find the attributes that are primarily represented by the first and second PC
 attributes_for_PC1 = dataframe.columns[np.argsort(np.abs(PC1))[::-1]]
 attributes_for_PC2 = dataframe.columns[np.argsort(np.abs(PC2))[::-1]]
-print("Attributes primarily represented by the first PC: " + attributes_for_PC1[0])
-print("Attributes primarily represented by the second PC: " + attributes_for_PC2[0])
+print("Attributes primarily represented by PC1: " + attributes_for_PC1[0])
+print("Attributes primarily represented by PC2: " + attributes_for_PC2[0])
 
 scatter_pc1_pc2 = plt.figure()
-plt.scatter(Z[:, 1], Z[:, 2], alpha=0.7)
+plt.scatter(Z[:, 0], Z[:, 1])
 plt.xlabel('PC1')
 plt.ylabel('PC2')
-plt.title('Projection onto the First Two Principal Components with Streams')
+plt.title('Projection onto the First Two Principal Components')
 plt.show()
 
 #-----------------------------
