@@ -33,8 +33,10 @@ PC2 = V[:, 1]
 #Find the attributes that are primarily represented by the first and second PC
 attributes_for_PC1 = dataframe.columns[np.argsort(np.abs(PC1))[::-1]]
 attributes_for_PC2 = dataframe.columns[np.argsort(np.abs(PC2))[::-1]]
-print("Attributes primarily represented by PC1: " + attributes_for_PC1[0])
-print("Attributes primarily represented by PC2: " + attributes_for_PC2[0])
+print("Attribute 1 primarily represented by PC1: " + attributes_for_PC1[0])
+print("Attribute 1 primarily represented by PC2: " + attributes_for_PC2[0])
+print("Attribute 2 primarily represented by PC1: " + attributes_for_PC1[1])
+print("Attribute 2 primarily represented by PC2: " + attributes_for_PC2[1])
 
 scatter_pc1_pc2 = plt.figure()
 plt.scatter(Z[:, 0], Z[:, 1])
@@ -46,7 +48,7 @@ plt.show()
 #-----------------------------
 
 #-----------Decision Tree-----------------
-dtc_attr = ['valence_%', 'acousticness_%']
+dtc_attr = ['valence_%', 'acousticness_%', 'energy_%']
 X_dtc_attr = df[dtc_attr]
 y_dtc_attr = df['mode'].ravel()
 
