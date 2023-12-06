@@ -10,10 +10,8 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 with open(r"./data/spotify_songs.csv", 'r') as f:
     df = pd.read_csv(f)
     
-    print(df.head())
-    
 #-----------Here starts PCA with all attributes------------------
-selected_attributes = ['danceability_%', 'valence_%', 'energy_%', 'acousticness_%', 'instrumentalness_%', 'liveness_%', 'speechiness_%']
+selected_attributes = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence']
 
 dataframe = df[selected_attributes]
 dataframe = dataframe.dropna()
@@ -55,7 +53,7 @@ split_index = int(len(df) * split_percentage)
 
 df_train = df.iloc[:split_index]
 
-dtc_attr = ['valence_%', 'acousticness_%', 'energy_%', 'danceability_%']
+dtc_attr = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence']
 X_dtc_attr = df_train[dtc_attr]
 y_dtc_attr = df_train['mode'].ravel()
 
@@ -65,7 +63,7 @@ mode_counts = df_train['mode'].value_counts()
 mode_counts = mode_counts.sort_values(ascending=False)
 print(mode_counts)
 
-dtc = DecisionTreeClassifier(criterion='gini', min_samples_split=15)
+dtc = DecisionTreeClassifier(criterion='gini', min_samples_split=450)
 dtc.fit(X_dtc_attr, y_dtc_attr)
 
 plt.figure(figsize=(100, 100))
@@ -82,40 +80,20 @@ true_negative = 0
 false_positive = 0
 false_negative = 0
 
-# Keep track of sampled songs to avoid duplicates
-#sampled_songs = set()
-
-#for _ in range(50):
 for index, row in df_test.iterrows():
-    # Randomly sample a row from df_test that hasn't been sampled before
-    #remaining_samples = df_test[~df_test.index.isin(sampled_songs)]
-    #if remaining_samples.empty:
-        #break
-    #random_sample = remaining_samples.sample(n=1)
-
-    # Extract attributes for prediction
-    #X_random_sample = random_sample[dtc_attr]
-
-    # Predict the mode for the random sample
-    #predicted_mode = dtc.predict(X_random_sample)[0]
     
     X_sample = row[dtc_attr].values.reshape(1,-1)
     predicted_mode = dtc.predict(X_sample)[0]
 
-    # Update confusion matrix variables
-    #actual_mode = random_sample['mode'].values[0]
     actual_mode = row['mode']
-    if actual_mode == 'Major' and predicted_mode == 'Major':
+    if actual_mode == 1 and predicted_mode == 1:
         true_positive += 1
-    elif actual_mode == 'Minor' and predicted_mode == 'Minor':
+    elif actual_mode == 0 and predicted_mode == 0:
         true_negative += 1
-    elif actual_mode == 'Major' and predicted_mode == 'Minor':
+    elif actual_mode == 1 and predicted_mode == 0:
         false_negative += 1
-    elif actual_mode == 'Minor' and predicted_mode == 'Major':
+    elif actual_mode == 0 and predicted_mode == 1:
         false_positive += 1
-
-    # Add the sampled song to the set
-    #sampled_songs.add(random_sample.index[0])
 
 # Create and print confusion matrix
 conf_matrix = pd.DataFrame([[true_positive, false_negative], [false_positive, true_negative]],
