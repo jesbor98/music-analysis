@@ -7,7 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 
-with open(r"./data/spotify-2023.csv", 'r') as f:
+with open(r"./data/spotify_songs.csv", 'r') as f:
     df = pd.read_csv(f)
     
     print(df.head())
