@@ -83,23 +83,28 @@ false_positive = 0
 false_negative = 0
 
 # Keep track of sampled songs to avoid duplicates
-sampled_songs = set()
+#sampled_songs = set()
 
-for _ in range(50):
+#for _ in range(50):
+for index, row in df_test.iterrows():
     # Randomly sample a row from df_test that hasn't been sampled before
-    remaining_samples = df_test[~df_test.index.isin(sampled_songs)]
-    if remaining_samples.empty:
-        break
-    random_sample = remaining_samples.sample(n=1)
+    #remaining_samples = df_test[~df_test.index.isin(sampled_songs)]
+    #if remaining_samples.empty:
+        #break
+    #random_sample = remaining_samples.sample(n=1)
 
     # Extract attributes for prediction
-    X_random_sample = random_sample[dtc_attr]
+    #X_random_sample = random_sample[dtc_attr]
 
     # Predict the mode for the random sample
-    predicted_mode = dtc.predict(X_random_sample)[0]
+    #predicted_mode = dtc.predict(X_random_sample)[0]
+    
+    X_sample = row[dtc_attr].values.reshape(1,-1)
+    predicted_mode = dtc.predict(X_sample)[0]
 
     # Update confusion matrix variables
-    actual_mode = random_sample['mode'].values[0]
+    #actual_mode = random_sample['mode'].values[0]
+    actual_mode = row['mode']
     if actual_mode == 'Major' and predicted_mode == 'Major':
         true_positive += 1
     elif actual_mode == 'Minor' and predicted_mode == 'Minor':
@@ -110,7 +115,7 @@ for _ in range(50):
         false_positive += 1
 
     # Add the sampled song to the set
-    sampled_songs.add(random_sample.index[0])
+    #sampled_songs.add(random_sample.index[0])
 
 # Create and print confusion matrix
 conf_matrix = pd.DataFrame([[true_positive, false_negative], [false_positive, true_negative]],
