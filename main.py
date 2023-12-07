@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import confusion_matrix, pair_confusion_matrix
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -46,14 +47,46 @@ plt.title('Projection onto the First Two Principal Components')
 plt.show()
 
 #-----------------------------
+# Isolation Forest for anomaly detection
+from sklearn.ensemble import IsolationForest, RandomForestClassifier
+
+iso_forest = IsolationForest(contamination='auto', random_state=42)
+anomalies = iso_forest.fit_predict(dataframe)
+df['anomaly'] = anomalies
+
+# Evaluate Isolation Forest
+conf_matrix_iso = pd.crosstab(df['mode'], df['anomaly'])
+accuracy_iso = np.sum(np.diag(conf_matrix_iso)) / np.sum(conf_matrix_iso.values)
+
+print("\nIsolation Forest Results:")
+print("Accuracy: {:.2f}%".format(accuracy_iso * 100))
+print("Confusion Matrix:")
+print(conf_matrix_iso)
+
+# Plot confusion matrix
+fig, ax = plt.subplots()
+cax = ax.matshow(conf_matrix_iso, cmap='Blues')
+plt.colorbar(cax)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.xticks([0, 1], ['Predicted Normal', 'Predicted Anomaly'])
+plt.yticks([0, 1], ['Actual Minor', 'Actual Major'])
+for i in range(2):
+    for j in range(2):
+        plt.text(j, i, str(conf_matrix_iso.iloc[i, j]), ha='center', va='center', color='black', fontsize=12)
+plt.show()
+
+#----------------------------------
 
 #-----------Decision Tree-----------------
+from sklearn.metrics import accuracy_score
+
 split_percentage = 0.7
 split_index = int(len(df) * split_percentage)
 
 df_train = df.iloc[:split_index]
 
-dtc_attr = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence']
+dtc_attr = ['danceability','energy','loudness','speechiness','liveness','valence']
 X_dtc_attr = df_train[dtc_attr]
 y_dtc_attr = df_train['mode'].ravel()
 
@@ -65,6 +98,20 @@ print(mode_counts)
 
 dtc = DecisionTreeClassifier(criterion='gini', min_samples_split=450)
 dtc.fit(X_dtc_attr, y_dtc_attr)
+
+# Assuming you have a testing set df_test
+df_test = df.iloc[split_index:]
+
+X_test = df_test[dtc_attr]
+y_test = df_test['mode'].ravel()
+
+# Use the trained decision tree model to predict on the test set
+y_pred = dtc.predict(X_test)
+
+# Evaluate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Decision Tree Accuracy: {accuracy*100}")
+
 
 plt.figure(figsize=(100, 100))
 plot_tree(dtc, feature_names=feature_names_list, class_names=['Major', 'Minor'], filled=True, rounded=True, impurity=True, fontsize=8)
@@ -116,4 +163,47 @@ for i in range(2):
 plt.show()
 # SKRIV KOMMENTAR HÄR ANGÅENDE ATT VI HADE PROBLEM MED CONF MATRIXEN
 
-#--------------------------------------
+#---------------------------Random Forest-------------------------
+# Import necessary libraries
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+# Split the data into training and testing sets
+df_train = df.iloc[:split_index]
+df_test = df.iloc[split_index:]
+
+# Define features and target variable for Random Forest
+rf_attributes = ['danceability', 'energy', 'loudness', 'speechiness', 'liveness', 'valence']
+X_rf_train = df_train[rf_attributes]
+y_rf_train = df_train['mode'].ravel()
+X_rf_test = df_test[rf_attributes]
+y_rf_test = df_test['mode'].ravel()
+
+# Create and train the Random Forest model
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_rf_train, y_rf_train)
+
+# Make predictions on the test set
+y_rf_pred = rf_model.predict(X_rf_test)
+
+# Evaluate Random Forest
+accuracy_rf = accuracy_score(y_rf_test, y_rf_pred)
+conf_matrix_rf = pd.crosstab(y_rf_test, y_rf_pred, rownames=['Actual'], colnames=['Predicted'])
+
+print("\nRandom Forest Results:")
+print("Accuracy: {:.2f}%".format(accuracy_rf * 100))
+print("Confusion Matrix:")
+print(conf_matrix_rf)
+
+# Plot confusion matrix for Random Forest
+fig, ax = plt.subplots()
+cax = ax.matshow(conf_matrix_rf, cmap='Blues')
+plt.colorbar(cax)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.xticks([0, 1], ['Predicted Major', 'Predicted Minor'])
+plt.yticks([0, 1], ['Actual Major', 'Actual Minor'])
+for i in range(2):
+    for j in range(2):
+        plt.text(j, i, str(conf_matrix_rf.iloc[i, j]), ha='center', va='center', color='black', fontsize=12)
+plt.show()
